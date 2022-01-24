@@ -6,7 +6,9 @@ use EventSourcingLaravel\EventSourcingLaravel\AbstractAggregateRootRepository;
 
 class TestAggregateRootRepository extends AbstractAggregateRootRepository
 {
+    public const TABLE = 'test_event_store';
+
     protected string $aggregateRootClassName = TestAggregateRoot::class;
 
-    protected string $table = 'event_store';
+    public string $table = self::TABLE;
 }

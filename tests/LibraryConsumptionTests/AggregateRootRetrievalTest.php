@@ -17,17 +17,8 @@ class AggregateRootRetrievalTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->migrateEventTableWithTableName(TestAggregateRootRepository::TABLE);
 
-        Schema::create('event_store', function (Blueprint $table) {
-            $table->uuid('event_id')->primary();
-            $table->string('aggregate_root_id', 100)->index();
-            $table->unsignedInteger('version');
-            $table->text('payload');
-            $table->dateTime('recorded_at', 6)->index();
-            $table->string('event_type');
-
-            $table->index(['aggregate_root_id', 'version'], 'reconstitution');
-        });
     }
 
     /** @test */
@@ -52,8 +43,33 @@ class AggregateRootRetrievalTest extends TestCase
 
         $testRepository->persist($aggregate);
 
-        $this->assertDatabaseHas('event_store', [
+        $this->assertDatabaseHas(TestAggregateRootRepository::TABLE, [
             'aggregate_root_id' => $aggregateId->toString()
         ]);
     }
+
+    /** @test */
+    public function table_can_be_configured_on_the_repository()
+    {
+        $this->migrateEventTableWithTableName('different_event_table_name');
+
+        /** @var TestAggregateRootRepository $testRepository */
+        $testRepository = app(TestAggregateRootWithDifferentTableName::class);
+
+        $aggregateId = TestAggregateId::create();
+        $aggregate = $testRepository->retrieve($aggregateId);
+
+        $aggregate->increaseCounter(2);
+
+        $testRepository->persist($aggregate);
+
+        $this->assertDatabaseHas('different_event_table_name', [
+            'aggregate_root_id' => $aggregateId->toString()
+        ]);
+    }
+}
+
+class TestAggregateRootWithDifferentTableName extends TestAggregateRootRepository
+{
+    public string $table = 'different_event_table_name';
 }
