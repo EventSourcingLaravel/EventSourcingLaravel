@@ -36,7 +36,6 @@ abstract class AbstractAggregateRootRepository extends  EventSourcedAggregateRoo
                 'connection' => $databaseManager->connection($this->connection),
                 'tableName' => $this->table,
                 'tableSchema' => $this->getTableSchema(),
-                'uuidEncoder' => new StringUuidEncoder(),
             ]),
             $dispatcher,
             $decorator,
