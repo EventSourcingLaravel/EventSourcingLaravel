@@ -2,9 +2,8 @@
 
 namespace Tests\LibraryConsumptionTests;
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use Tests\DemoApplication\TestAggregateId;
 use Tests\DemoApplication\TestAggregateRoot;
 use Tests\DemoApplication\TestAggregateRootRepository;
@@ -39,9 +38,13 @@ class AggregateRootRetrievalTest extends TestCase
         $aggregateId = TestAggregateId::create();
         $aggregate = $testRepository->retrieve($aggregateId);
 
+        $aggregateInOtherProcess = $testRepository->retrieve($aggregateId);
+
         $aggregate->increaseCounter(2);
+        $aggregateInOtherProcess->increaseCounter(5);
 
         $testRepository->persist($aggregate);
+        $testRepository->persist($aggregateInOtherProcess);
 
         $this->assertDatabaseHas(TestAggregateRootRepository::TABLE, [
             'aggregate_root_id' => $aggregateId->toString()
